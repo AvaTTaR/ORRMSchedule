@@ -7,7 +7,8 @@ import sqlite3
 from models import Employee
 from util import Util
 
-database_url = '{}{}'.format(os.getcwd(), '/database.db')
+database_url = '{}{}'.format(os.path.dirname(os.path.realpath(__file__)),
+                             '/database.db')
 
 
 def init_db():
@@ -31,11 +32,11 @@ def init_db():
 
 def add_employee(name, surname):
     """Adding employee to database."""
-    empl = Employee(name, surname)
+    employee = Employee(name, surname)
     conn = sqlite3.connect(database_url)
-    conn.execute('INSERT INTO employee VALUES (Null, ?, ?, ?, ?, ?)',
-                 empl.get_values())
-    value = empl.get_nickname()
+    conn.execute('INSERT INTO employee VALUES (NULL, ?, ?, ?, ?, ?)',
+                 employee.get_values())
+    value = employee.get_nickname()
     conn.execute('''CREATE TABLE %s (
                  date VARCHAR(10) NOT NULL UNIQUE,
                  %s_shift VARCHAR(3));''' % (value, value))

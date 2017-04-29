@@ -13,8 +13,7 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def get_page():
     """Return."""
-    return render_template('index.html', test='test',
-                           dates_this_week=Util.get_this_week(),
+    return render_template('index.html', dates_this_week=Util.get_this_week(),
                            this_week=get_this_week_for_site())
 
 
