@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Database module."""
 
-import os.path
+import os
 import sqlite3
 
 from models import Employee
 from util import Util
 
-database_url = os.path.abspath('database.db')
+database_url = '{}{}'.format(os.getcwd(), 'database.db')
 
 
 def init_db():
