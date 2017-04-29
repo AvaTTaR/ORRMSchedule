@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ORRM</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<style type="text/css">
+body { background:#e9eaed; }
+.nav-tabs{
+  background-color:#e9eaed;
+}
+.tab-content{
+    background-color:#fff;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    padding: 10px;
+}
+.nav-tabs > li > a{
+  border: medium none;
+  margin-bottom: 0;
+}
+.nav-tabs > li > a:hover{
+  background-color: #303136 !important;
+    border: medium none;
+    border-radius: 0;
+    color:#fff;
+}
+</style>
+<body>
+<div class="container">
+  <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="#this_week" role="tab" aria-controls="this_week">Текущая неделя</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#next_week" role="tab" aria-controls="next_week">Следующая неделя</a>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="content">
+    <div class="tab-pane fade active" id="this_week" role="tabpanel">
+      <table class="table table-sm", id="myTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Пн</th>
+            <th>Вт</th>
+            <th>Ср</th>
+            <th>Чт</th>
+            <th>Пт</th>
+          </tr>
+          <tr>
+            <th>Дата</th>
+            {% for day in this_week['dates'] %}
+            <th>{{ day }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for i in this_week['schedule'] %}
+          <tr>
+            {% for cell in i %}
+              <td>
+                {% if loop.first %}
+                  {{ cell }}
+                {% else %}
+                  <button type="button" class="btn btn-default">{{ cell }}</button>
+                {% endif %}
+              </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="tab-pane fade" id="next_week" role="tabpanel">
+      <table class="table table", id="myTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Пн</th>
+            <th>Вт</th>
+            <th>Ср</th>
+            <th>Чт</th>
+            <th>Пт</th>
+          </tr>
+          <tr>
+            <th>Дата</th>
+            {% for day in this_week['dates'] %}
+            <th>{{ day }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for i in this_week['schedule'] %}
+          <tr>
+            {% for cell in i %}
+            <td>{{ cell }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+    <script>
+      $(function () {
+        $('#myTab a:first').tab('show')
+      })
+    </script>
+
+</div>
+
+<div class="navbar-fixed-bottom visible-xs row-fluid">
+  <div class="navbar-inner">
+    <div class="container">
+        <div class="panel panel-default">
+          <div class="panel-body">
+              <div class="dropup">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Dropup Example<span class="caret"></span></button>
+              <ul class="dropdown-menu">
+                <li><a href="#">Добавить сотрудника</a>$(".alert").alert()</li>
+                <li><a href="#">Удалить сотрудника</a></li>
+              </ul>
+              </div>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
