@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
   <title>ORRM</title>
@@ -12,7 +12,13 @@
 <style type="text/css">
   body {
     background-color: #E9EAEE;
-    padding-top: 24px !important;
+  }
+
+  .navbar .navbar-btn {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    margin-right: 15px;
   }
 
   .nav-tabs {
@@ -66,10 +72,50 @@
       border-bottom-color: #fff !important;
     }
   }
+
+  .modal {
+    text-align: center;
+  }
+
+  .modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+  }
+
+  .modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+  }
 </style>
+<script>
+  $(function() {
+    $('#myTab a:first').tab('show')
+    $('.navbar-btn').tab('show')
+  });
+</script>
+<script>
+  $(function() {
+    $('#modalLoginButton').click(function() {
+      $(this).button('loading');
+      //$('.modal').modal('toggle');
+    });
+  })
+</script>
 
 <body>
+  <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container-fluid" id="navfluid">
+      <div class="navbar-header">
+        <a class="navbar-brand">Расписание</a>
+        <button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal" data-target=".bs-example-modal-sm">Manage</button>
+      </div>
+    </div>
+  </nav>
   <div class="container">
+
     <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
       <li class="nav-item">
         <a class="nav-link active" data-toggle="tab" href="#this_week" role="tab" aria-controls="this_week">Текущая неделя</a>
@@ -118,27 +164,54 @@
         </div>
       </div>
     </div>
-    <script>
-      $(function() {
-        $('#myTab a:first').tab('show')
-      })
-    </script>
-
   </div>
 
-  <div class="navbar-fixed-bottom visible-xs row-fluid">
+  <div class="navbar-fixed-bottom row-fluid">
     <div class="navbar-inner">
       <div class="container">
         <div class="panel panel-default">
           <div class="panel-body">
+            <!--
             <div class="dropup">
               <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Dropup Example<span class="caret"></span></button>
               <ul class="dropdown-menu">
-                <li><a href="#">Добавить сотрудника</a>$(".alert").alert()</li>
+                <li><a id="add_employee">Добавить сотрудника</a></li>
                 <li><a href="#">Удалить сотрудника</a></li>
               </ul>
             </div>
+            -->
+            <button type="button" id="add_employee" class="btn btn-primary">Добавить сотрудника</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Login</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Login</label>
+              <div class="col-sm-10">
+                <p class="form-control-static">automat</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+              <div class="col-sm-10">
+                <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="modalLoginButton">Login</button>
         </div>
       </div>
     </div>
