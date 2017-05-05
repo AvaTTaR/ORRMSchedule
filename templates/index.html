@@ -9,6 +9,11 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+  <script type="text/javascript" src="{{url_for('static', filename='bootstrap-notify.min.js') }}"></script>
+  <!--<script src="{{url_for('static', filename='orrm.js') }}"></script>-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 </head>
 <style type="text/css">
   body {
@@ -101,6 +106,7 @@
   $(function() {
     $('#loginModal')
       .on('shown.bs.modal', function(e) {
+        $("#inputPassword").focus();
         $('#loginForm').validator().on('submit', function(e) {
           var password = $('#inputPassword').val();
           if (e.isDefaultPrevented()) {
@@ -116,7 +122,7 @@
                   $('#loginModal').modal('toggle');
                   $('#manageModal').modal('show');
                 } else {
-                  $('alert').alert();
+                  $('#defaultAlert').alert();
                   $('#passwordGroup').addClass('has-error');
                 };
               }
@@ -130,13 +136,91 @@
       })
   })
 </script>
+<script>
+$(function() {
+  // Employee modal
+  $('#addEmployeeModal')
+    .on('shown.bs.modal', function(e) {
+      $("#inputName").focus();
+      $('#addEmployeeForm').validator().on('submit', function(e) {
+        var name = $('#inputName').val();
+        var surname = $('#inputSurname').val();
+        if (e.isDefaultPrevented()) {
+          $('alert').alert();
+        } else {
+          e.preventDefault();
+          $.ajax({
+            url: '/add_employee',
+            type: 'POST',
+            data: $('#addEmployeeForm').serialize(),
+            success: function(result) {
+              if (result.status == 'OK') {
+                $.notify({
+                  message: "Пользователь добавлен"
+                }, {
+                  type: "success"
+                })
+                $('#addEmployeeModal').modal('toggle');
+                $('#employeeTable').bootstrapTable('refresh');
+              } else {
+                $('#employeeNotAddedAlert').alert();
+                $('#nameGroup').addClass('has-error');
+                $('#surnameGroup').addClass('has-error');
+              };
+            }
+          });
+        }
+      });
+    })
+    .on('hidden.bs.modal', function(e) {
+      $('#inputName').val('');
+      $('#inputSurname').val('');
+      $('#loginForm').validator('destroy');
+      $('#defaultAlert').alert();
+    })
+
+  $('#deleteEmployeeButton').click(function() {
+    $.ajax({
+      url: '/delete_employee',
+      type: 'POST',
+      data: {
+        id: $('#employeeTable').bootstrapTable('getSelections')[0]['id']
+      },
+      success: function(result) {
+        if (result.status == 'OK') {
+          $('#employeeTable').bootstrapTable('refresh');
+          $.notify("Пользователь удалён", {
+            allow_dismiss: false,
+            placement: {
+              from: "bottom",
+              align: "center"
+            },
+            type: "success"
+          });
+        } else {
+          $.notify("При удалении пользователя позникла ошибка", {
+            allow_dismiss: false,
+            placement: {
+              from: "bottom",
+              align: "center"
+            },
+            type: "danger"
+          });
+        };
+      }
+    });
+  })
+
+});
+
+</script>
 
 <body>
   <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
     <div class="container-fluid" id="navfluid">
       <div class="navbar-header">
         <a class="navbar-brand">Расписание</a>
-        <button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal" data-target=".bs-example-modal-sm">Управление</button>
+        <button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal" data-target="#loginModal">Управление</button>
       </div>
     </div>
   </nav>
@@ -151,36 +235,7 @@
     </ul>
     <div class="tab-content tab-content-alt" id="content">
       <div class="tab-pane fade active table-responsive" id="this_week" role="tabpanel">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Пн</th>
-              <th>Вт</th>
-              <th>Ср</th>
-              <th>Чт</th>
-              <th>Пт</th>
-            </tr>
-            <tr>
-              <th>Дата</th>
-              {% for day in this_week['dates'] %}
-              <th>{{ day }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for i in this_week['schedule'] %}
-            <tr>
-              {% for cell in i %}
-              <td>
-                {% if loop.first %} {{ cell }} {% else %}
-                <button type="button" class="btn btn-default">{{ cell }}</button> {% endif %}
-              </td>
-              {% endfor %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        ...
       </div>
       <div class="tab-pane fade" id="next_week" role="tabpanel">
         <div class="container-fluid">
@@ -193,25 +248,18 @@
   <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="loginModal">
     <div class="modal-dialog modal-sm" role="document">
       <div class="modal-content">
-        <form method="post" action="/" id="loginForm" data-toggle="validator">
+        <form method="post" id="loginForm" data-toggle="validator">
           <div class="modal-header">
             <h4 class="modal-title">Login</h4>
           </div>
           <div class="modal-body">
             <div class="form-group" id="passwordGroup">
-              <label for="inputPassword" class="col-sm-3 control-label">Пароль</label>
-              <div class="col-sm-10">
-                <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Введите пароль..." required>
-              </div>
+              <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Введите пароль..." required>
             </div>
-            <div class="form-group">
-              <div class="row">
-                <div class="small-4 columns col-xs-offset-6">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-primary">OK</button>
-                </div>
-              </div>
-            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">OK</button>
           </div>
         </form>
       </div>
@@ -226,22 +274,57 @@
           <h4 class="modal-title">Управление</h4>
         </div>
         <div class="modal-body">
-          <p>One fine body&hellip;</p>
+          <div id="manageTableToolbar" class="btn-group">
+            <button type="button" class="btn btn-default" id="addEmployeeButton" data-toggle="modal" data-target="#addEmployeeModal">
+              <i class="glyphicon glyphicon-plus"></i>
+            </button>
+            <button type="button" class="btn btn-default" id="deleteEmployeeButton">
+              <i class="glyphicon glyphicon-trash"></i>
+            </button>
+          </div>
+          <table id="employeeTable" data-toggle="table" data-url="/employees" data-toolbar="#manageTableToolbar" data-show-refresh="true">
+            <thead>
+              <tr>
+                <th data-checkbox="true" data-align="center"></th>
+                <th data-field="id" data-halign="center" data-align="center">id</th>
+                <th data-field="name" data-halign="center" data-align="center">Имя</th>
+                <th data-field="surname" data-halign="center" data-align="center">Фамилия</th>
+              </tr>
+            </thead>
+          </table>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary">Save</button>
         </div>
       </div>
-      <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
   </div>
-  <!-- /.modal -->
 
-  <div class="alert alert-danger collapse" role="alert">
-    <a class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    <strong>Что-то пошло не так!</strong> Попробуйте перезагрузить страницу.
+  <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="addEmployeeModal">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <form method="post" id="addEmployeeForm" data-toggle="validator">
+          <div class="modal-header">
+            <h4 class="modal-title">Добавить</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group" id="nameGroup">
+              <label for="inputName">Имя</label>
+              <input type="text" name="name" class="form-control" id="inputName" required>
+            </div>
+            <div class="form-group" id="surnameGroup">
+              <label for="inputSurname">Фамилия</label>
+              <input type="text" name="surname" class="form-control" id="inputSurname" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">OK</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
 </body>

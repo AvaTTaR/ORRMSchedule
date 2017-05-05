@@ -36,19 +36,15 @@ def add_employee(name, surname):
     conn = sqlite3.connect(database_url)
     conn.execute('INSERT INTO employee VALUES (NULL, ?, ?, ?, ?, ?)',
                  employee.get_values())
-    value = employee.get_nickname()
-    conn.execute('''CREATE TABLE %s (
-                 date VARCHAR(10) NOT NULL UNIQUE,
-                 %s_shift VARCHAR(3));''' % (value, value))
     conn.commit()
     conn.close()
 
 
-def delete_employee(nickname):
+def delete_employee(employee_id):
     """Deleting employee from database."""
     conn = sqlite3.connect(database_url)
-    conn.execute("DELETE FROM employee WHERE nickname='%s'" % nickname)
-    conn.execute('DROP TABLE IF EXISTS %s' % nickname)
+    conn.execute("DELETE FROM employee WHERE id='%s'" % employee_id)
+    # conn.execute('DROP TABLE IF EXISTS %s' % nickname)
     conn.commit()
     conn.close()
 
@@ -63,6 +59,19 @@ def get_employee_list():
     conn.commit()
     conn.close()
     return tuple(employee_list)
+
+
+def get_employee_data():
+    """Return list of employees nicknames."""
+    conn = sqlite3.connect(database_url)
+    cursor = conn.execute\
+        ('SELECT id, name_rus, surname_rus FROM employee')
+    employee_data = []
+    for row in cursor:
+        employee_data.append({'id': row[0], 'name': row[1], 'surname': row[2]})
+    conn.commit()
+    conn.close()
+    return employee_data
 
 
 def get_week():
