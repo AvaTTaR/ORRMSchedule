@@ -13,14 +13,14 @@ class Employee:
         self.surname_rus = str(surname_rus)
         self.name_eng = Util.translit(name_rus)
         self.surname_eng = Util.translit(surname_rus)
-        nickname = self.name_eng[0] + self.surname_eng
-        self.nickname = nickname.lower()
+        shortname = self.name_eng[0] + self.surname_eng
+        self.shortname = shortname.lower()
 
-    def get_nickname(self):
-        """Get employee nickname (Jogn Dorian -> jdorian)."""
-        return self.nickname
+    def get_shortname(self):
+        """Get employee nickname (John Dorian -> jdorian)."""
+        return self.shortname
 
     def get_values(self):
         """Return employee fields."""
         return (self.name_rus, self.surname_rus, self.name_eng,
-                self.surname_eng, self.nickname)
+                self.surname_eng, self.shortname)

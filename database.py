@@ -6,164 +6,154 @@ import sqlite3
 
 from models import Employee
 from util import Util
+from werkzeug.security import generate_password_hash
 
 database_url = '{}{}'.format(os.path.dirname(os.path.realpath(__file__)),
                              '/database.db')
 
 
 def init_db():
-    """Database initialization."""
+    """Initiate db and set admin password."""
     if os.path.exists(database_url):
         os.remove(database_url)
     conn = sqlite3.connect(database_url)
-    conn.execute('''CREATE TABLE employee (
+    conn.execute('''CREATE TABLE employees (
                  id INTEGER NOT NULL,
                  name_rus VARCHAR(15),
                  surname_rus VARCHAR(15),
                  name_eng VARCHAR(15),
                  surname_eng VARCHAR(15),
-                 nickname VARCHAR(15),
-                 PRIMARY KEY(id));''')
+                 shortname VARCHAR(15),
+                 PRIMARY KEY(id),
+                 UNIQUE (id, name_rus, name_eng));''')
     conn.execute('''CREATE TABLE schedule (
-                 date VARCHAR(10) NOT NULL UNIQUE);''')
+                 date VARCHAR(10),
+                 shortname VARCHAR(10),
+                 employee_shift VARCHAR(3) DEFAULT '',
+                 UNIQUE (date, shortname));''')
+    conn.execute('''CREATE TABLE keys (
+                     shortname VARCHAR NOT NULL,
+                     password VARCHAR NOT NULL);''')
+    password = generate_password_hash(input("Введите пароль: "))
+    conn.execute('''INSERT INTO keys VALUES (?, ?);''', ['admin', password])
     conn.commit()
     conn.close()
 
 
-def add_employee(name, surname):
-    """Adding employee to database."""
-    employee = Employee(name, surname)
+def get_admin_pwhash():
+    shortname = 'admin'
     conn = sqlite3.connect(database_url)
-    conn.execute('INSERT INTO employee VALUES (NULL, ?, ?, ?, ?, ?)',
+    cur = conn.execute\
+        ("SELECT password FROM keys WHERE shortname = ?", [shortname])
+    pwhash = cur.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return pwhash
+
+
+def add_employee(name_rus, surname_rus):
+    """Adding employee to database."""
+    employee = Employee(name_rus, surname_rus)
+    conn = sqlite3.connect(database_url)
+    conn.execute('INSERT INTO employees VALUES (NULL, ?, ?, ?, ?, ?)',
                  employee.get_values())
     conn.commit()
     conn.close()
 
 
-def delete_employee(employee_id):
+def delete_employee(name_rus, surname_rus):
     """Deleting employee from database."""
     conn = sqlite3.connect(database_url)
-    conn.execute("DELETE FROM employee WHERE id='%s'" % employee_id)
-    # conn.execute('DROP TABLE IF EXISTS %s' % nickname)
+    conn.execute("DELETE FROM employees WHERE name_rus=? AND surname_rus=?",
+                 [name_rus, surname_rus])
     conn.commit()
     conn.close()
 
 
-def get_employee_list():
+def get_employees_shortname():
     """Return list of employees nicknames."""
     conn = sqlite3.connect(database_url)
-    cursor = conn.execute('SELECT nickname FROM employee')
-    employee_list = []
+    cursor = conn.execute('SELECT shortname FROM employees')
+    employees = []
     for row in cursor:
-        employee_list.append(row[0])
+        employees.append(row[0])
     conn.commit()
     conn.close()
-    return tuple(employee_list)
+    return tuple(employees)
 
 
-def get_employee_data():
+def get_employees():
     """Return list of employees nicknames."""
     conn = sqlite3.connect(database_url)
-    cursor = conn.execute\
-        ('SELECT id, name_rus, surname_rus FROM employee')
-    employee_data = []
+    cursor = conn.execute \
+        ('SELECT name_rus, surname_rus FROM employees')
+    employees = []
     for row in cursor:
-        employee_data.append({'id': row[0], 'name': row[1], 'surname': row[2]})
+        employees.append({'name_rus': row[0], 'surname_rus': row[1]})
     conn.commit()
     conn.close()
-    return employee_data
+    return employees
 
 
-def get_week():
-    """Return list of 14 dates from this monday."""
-    conn = sqlite3.connect(database_url)
-    conn.executemany('INSERT OR IGNORE INTO schedule VALUES(?)',
-                     Util.get_dates_tuple())
-    conn.commit()
-    conn.close()
-    return 'pass'
-
-
-def get_schedule_for_mobile():
-    """Return schedule for mobile app."""
-    conn = sqlite3.connect(database_url)
-    cur = conn.cursor()
-    data = {}
-    data['schedule'] = []
-    first_day = Util.get_dates()[0]
-    last_day = Util.get_dates()[-1]
-    for nickname in get_employee_list():
-        employee_shifts = []
-        employee = {}
-        conn.executemany('INSERT OR IGNORE INTO %s VALUES(?, "")' % nickname,
-                         Util.get_dates_tuple())
-        c = cur.execute('''SELECT name_rus, surname_rus
-                    FROM employee where nickname = "%s"''' % nickname)
-        for i in c:
-            employee['name'] = "%s %s" % (i[0], i[1])
-        query = cur.execute('SELECT * FROM %s WHERE DATE BETWEEN "%s" AND "%s"'
-                            % (nickname, first_day, last_day))
-        for day in query:
-            employee_shifts.append({'date': day[0], 'shift': day[1]})
-        employee['shifts'] = employee_shifts
-        data['schedule'].append(employee)
-    conn.commit()
-    conn.close()
-    return data
-
-
-def get_this_week():
+def get_schedule(week_param):
     """Return from db this week with employees shifts."""
     conn = sqlite3.connect(database_url)
     cur = conn.cursor()
-    data = {}
-    data['schedule'] = []
-    first_day = Util.get_this_week()[0]
-    last_day = Util.get_this_week()[-1]
-    for nickname in get_employee_list():
-        employee_shifts = []
-        employee = {}
-        conn.executemany('INSERT OR IGNORE INTO %s VALUES(?, "")' % nickname,
-                         Util.get_dates_tuple())
-        c = cur.execute('''SELECT name_rus, surname_rus
-                    FROM employee where nickname = "%s"''' % nickname)
+    data = []
+    first_day = Util.get_dates(week_param)[0]
+    last_day = Util.get_dates(week_param)[-1]
+    data_to_insert = []
+    for shortname in get_employees_shortname():
+        for i in Util.get_dates(week_param):
+            date = [i, shortname]
+            data_to_insert.append(tuple(date))
+        employee_data = {}
+        conn.executemany('''INSERT OR IGNORE INTO schedule(date, shortname) 
+                            VALUES(?, ?)''', data_to_insert)
+        c = cur.execute('''SELECT name_rus, surname_rus 
+                           FROM employees where shortname = ?''', [shortname])
         for i in c:
-            employee['name'] = "%s %s" % (i[0], i[1])
-        query = cur.execute('SELECT * FROM %s WHERE DATE BETWEEN "%s" AND "%s"'
-                            % (nickname, first_day, last_day))
+            employee_data['name'] = "%s %s" % (i[0], i[1])
+        query = cur.execute('''SELECT date,employee_shift 
+                               FROM schedule WHERE shortname=? 
+                               AND date BETWEEN ? AND ?''',
+                            [shortname, first_day, last_day])
         for day in query:
-            employee_shifts.append({'date': day[0], 'shift': day[1]})
-        employee['shifts'] = employee_shifts
-        data['schedule'].append(employee)
+            # date = day[0] and shift = day[1]
+            employee_data[Util.format_date(day[0])] = day[1]
+        data.append(employee_data)
     conn.commit()
     conn.close()
     return data
 
-
-def get_this_week_for_site():
-    """Return data for site from db ."""
-    conn = sqlite3.connect(database_url)
-    cur = conn.cursor()
-    data = {}
-    employee_list = []
-    first_day = Util.get_this_week()[0]
-    last_day = Util.get_this_week()[-1]
-    data['dates'] = tuple(Util.get_this_week())
-    for nickname in get_employee_list():
-        row = []
-        conn.executemany('INSERT OR IGNORE INTO %s VALUES(?, "")' % nickname,
-                         Util.get_dates_tuple())
-        c = cur.execute('''SELECT name_rus, surname_rus
-                    FROM employee where nickname = "%s"''' % nickname)
-        for i in c:
-            # first item of a row is name (i[0]) and surname (i[1])
-            row.append("%s %s" % (i[0], i[1]))
-        query = cur.execute('SELECT * FROM %s WHERE DATE BETWEEN "%s" AND "%s"'
-                            % (nickname, first_day, last_day))
-        for day in query:
-            row.append(day[1])  # fill row by fhifts
-        employee_list.append(tuple(row))
-    data['schedule'] = tuple(employee_list)
-    conn.commit()
-    conn.close()
-    return data
+#def get_schedule(week_param):
+#    """Return from db this week with employees shifts."""
+#    conn = sqlite3.connect(database_url)
+#    cur = conn.cursor()
+#    data = {'schedule': []}
+#    first_day = Util.get_dates(week_param)[0][0]
+#    last_day = Util.get_dates(week_param)[-1][0]
+#    data_to_insert = []
+#    for shortname in get_employees_shortname():
+#        for i in Util.get_dates(week_param):
+#            i.append(shortname)
+#            data_to_insert.append(tuple(i))
+#        employee_shifts = []
+#        employee = {}
+#        conn.executemany('''INSERT OR IGNORE INTO schedule(date, shortname)
+#                            VALUES(?, ?)''', data_to_insert)
+#        c = cur.execute('''SELECT name_rus, surname_rus
+#                           FROM employees where shortname = ?''', [shortname])
+#        for i in c:
+#            employee['name'] = "%s %s" % (i[0], i[1])
+#        query = cur.execute('''SELECT date,employee_shift
+#                               FROM schedule WHERE shortname=?
+#                               AND date BETWEEN ? AND ?''',
+#                            [shortname, first_day, last_day])
+#        for day in query:
+#            employee_shifts.append({'date': day[0], 'shift': day[1]})
+#        employee['shifts'] = employee_shifts
+#        data['schedule'].append(employee)
+#    conn.commit()
+#    conn.close()
+#    return data
