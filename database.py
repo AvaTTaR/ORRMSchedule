@@ -110,10 +110,11 @@ def get_schedule(week_param):
         employee_data = {}
         conn.executemany('''INSERT OR IGNORE INTO schedule(date, shortname) 
                             VALUES(?, ?)''', data_to_insert)
-        c = cur.execute('''SELECT name_rus, surname_rus 
+        c = cur.execute('''SELECT name_rus, surname_rus, shortname 
                            FROM employees where shortname = ?''', [shortname])
         for i in c:
             employee_data['name'] = "%s %s" % (i[0], i[1])
+            employee_data['shortname'] = i[2]
         query = cur.execute('''SELECT date,employee_shift 
                                FROM schedule WHERE shortname=? 
                                AND date BETWEEN ? AND ?''',

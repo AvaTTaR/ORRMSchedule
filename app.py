@@ -49,5 +49,12 @@ def get_schedule_from_db(param):
     return jsonify(get_schedule(param))
 
 
+@app.route('/schedule', methods=['POST'])
+def update_schedule():
+    if request.method == 'POST':
+        print(request.form)
+        return jsonify({'status': '404'})
+
+
 if __name__ == "__main__":
     app.run()

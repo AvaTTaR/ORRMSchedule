@@ -13,6 +13,9 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
   <script type="text/javascript" src="{{url_for('static', filename='bootstrap-notify.min.js') }}"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/extensions/editable/bootstrap-table-editable.min.js"></script>
 </head>
 <style type="text/css">
   body {
@@ -20,11 +23,11 @@
   }
 
   .selectwidthauto {
-     width:auto !important;
-     padding: 0px !important;
-     display: initial !important;
-     height: auto !important;
-   }
+    width: auto !important;
+    padding: 0px !important;
+    display: initial !important;
+    height: auto !important;
+  }
 
   .navbar .navbar-btn {
     position: absolute;
@@ -163,6 +166,7 @@
                 if (result.status == 'OK') {
                   $.notify("Пользователь добавлен", {
                     allow_dismiss: false,
+                    z_index: 10031,
                     placement: {
                       from: "bottom",
                       align: "center"
@@ -171,9 +175,11 @@
                   });
                   $('#addEmployeeModal').modal('toggle');
                   $('#employeeTable').bootstrapTable('refresh');
+                  $('#thisWeekTable').bootstrapTable('refresh');
                 } else {
                   $.notify("При добавлении пользователя позникла ошибка", {
                     allow_dismiss: false,
+                    z_index: 10031,
                     placement: {
                       from: "bottom",
                       align: "center"
@@ -206,8 +212,10 @@
         success: function(result) {
           if (result.status == 'OK') {
             $('#employeeTable').bootstrapTable('refresh');
+            $('#thisWeekTable').bootstrapTable('refresh');
             $.notify("Пользователь удалён", {
               allow_dismiss: false,
+              z_index: 10031,
               placement: {
                 from: "bottom",
                 align: "center"
@@ -217,6 +225,7 @@
           } else {
             $.notify("При удалении пользователя позникла ошибка", {
               allow_dismiss: false,
+              z_index: 10031,
               placement: {
                 from: "bottom",
                 align: "center"
@@ -231,23 +240,59 @@
   });
 </script>
 <script>
-  function scheduleCellFormatter(value) {
-    var $select = $([
-    '<select class="form-control">',
-    '<option value=""> </option>',
-    '<option value="0">0</option>',
-    '<option value="1">1</option>',
-    '<option value="2">2</option>',
-    '<option value="3">3</option>',
-    '<option value="B">B</option>',
-    '<option value="1/2">1/2</option>',
-    '<option value="2/B">2/B</option>',
-    '<option value="3/B">3/B</option>',
-    '</select>'
-    ].join(''));
-    $select.find('option[value="' + value + '"]').attr('selected', 'selected');
-    return '<select class="form-control selectwidthauto">'+$select.html()+'</select>';
-  };
+  $(function() {
+    $.fn.editable.defaults.source = [{
+        value: ' ',
+        text: ' '
+      },
+      {
+        value: '0',
+        text: '0'
+      },
+      {
+        value: '1',
+        text: '1'
+      },
+      {
+        value: '2',
+        text: '2'
+      },
+      {
+        value: '3',
+        text: '3'
+      },
+      {
+        value: 'B',
+        text: 'B'
+      },
+      {
+        value: '1/2',
+        text: '1/2'
+      },
+      {
+        value: '2/B',
+        text: '2/B'
+      },
+      {
+        value: '3/B',
+        text: '3/B'
+      }
+    ]
+    $.fn.editable.defaults.mode = 'popup';
+    $.fn.editable.defaults.type = 'select';
+    $.fn.editable.defaults.showbuttons = false;
+    $.fn.editable.defaults.pk = 'shortname';
+    $.fn.editable.defaults.url = '/schedule';
+    $.fn.editable.defaults.emptytext = '.';
+    $.fn.editable.defaults.success = function(response, newValue) {
+      if (response.status == 'OK') {
+        console.log(response.status);
+      } else {
+        console.log(response.status);
+      }
+    };
+
+  });
 </script>
 
 <body>
@@ -275,9 +320,10 @@
             <i class="glyphicon glyphicon-floppy-disk"></i>
           </button>
         </div>
-        <table id="thisWeekTable" data-toggle="table" data-url="/schedule=this" data-toolbar="#thisWeekTableToolbar" data-show-refresh="true">
+        <table id="thisWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname" data-toolbar="#thisWeekTableToolbar" data-show-refresh="true">
           <thead>
             <tr>
+              <th data-visible="false"></th>
               <th></th>
               <th data-halign="center">Пн</th>
               <th data-halign="center">Вт</th>
@@ -286,9 +332,10 @@
               <th data-halign="center">Пт</th>
             </tr>
             <tr>
+              <th data-field="shortname" data-visible="false"></th>
               <th data-field="name" data-halign="center" data-align="center">Имя</th>
               {% for date in this_week %}
-              <th data-field="{{ date }}" data-valign="middle" data-halign="center" data-align="center" data-formatter="scheduleCellFormatter">{{ date }}</th>
+              <th data-field="{{ date }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date }}</th>
               {% endfor %}
             </tr>
           </thead>
