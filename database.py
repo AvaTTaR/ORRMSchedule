@@ -121,13 +121,22 @@ def get_schedule(week_param):
                             [shortname, first_day, last_day])
         for day in query:
             # date = day[0] and shift = day[1]
-            employee_data[Util.format_date(day[0])] = day[1]
+            employee_data[day[0]] = day[1]
         data.append(employee_data)
     conn.commit()
     conn.close()
     return data
 
-#def get_schedule(week_param):
+
+def update(shortname, date, shift):
+    conn = sqlite3.connect(database_url)
+    cur = conn.cursor()
+    cur.execute('''UPDATE schedule SET employee_shift=? 
+                   WHERE date=? AND shortname=?''', [shift, date, shortname])
+    conn.commit()
+    conn.close()
+
+# def get_schedule(week_param):
 #    """Return from db this week with employees shifts."""
 #    conn = sqlite3.connect(database_url)
 #    cur = conn.cursor()

@@ -76,6 +76,13 @@ class Util:
         return date_object.strftime("%d.%m")
 
     @staticmethod
+    def get_dates_for_site(param):
+        dates = []
+        for day in Util.get_dates(param):
+            dates.append({'data': day, 'value': Util.format_date(day)})
+        return dates
+
+    @staticmethod
     def translit(string):
         """Return the name and surname in translit."""
         capital_letters = {

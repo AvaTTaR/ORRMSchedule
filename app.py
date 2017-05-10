@@ -17,8 +17,8 @@ def get_page():
         else:
             return jsonify({'status': '404'})
     return render_template('index.html',
-                           this_week=Util.get_formatted_dates("this"),
-                           next_week=Util.get_formatted_dates("next"))
+                           this_week=Util.get_dates_for_site("this"),
+                           next_week=Util.get_dates_for_site("next"))
 
 
 @app.route('/employees')
@@ -53,6 +53,8 @@ def get_schedule_from_db(param):
 def update_schedule():
     if request.method == 'POST':
         print(request.form)
+        update(request.form['shortname'], request.form['date'],
+               request.form['shift'])
         return jsonify({'status': 'OK'})
 
 

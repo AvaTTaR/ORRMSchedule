@@ -16,288 +16,9 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/extensions/editable/bootstrap-table-editable.min.js"></script>
+  <script src="{{url_for('static', filename='script.js')}}"></script>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/default.css') }}">
 </head>
-<style type="text/css">
-  body {
-    background-color: #E9EAEE;
-  }
-
-  .selectwidthauto {
-    width: auto !important;
-    padding: 0px !important;
-    display: initial !important;
-    height: auto !important;
-  }
-
-  .navbar .navbar-btn {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    margin-right: 15px;
-  }
-
-  .nav-tabs {
-    &.nav-tabs-alt {
-      padding-top: 30px;
-      li {
-        a {
-          color: @brand-info;
-          font-size: 16px;
-        }
-      }
-      li.active {
-        a {
-          background-color: #fff;
-          color: @brand-primary !important;
-          font-size: 16px;
-        }
-      }
-    }
-  }
-
-  .tab-content.tab-content-alt {
-    border-right: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    border-top-color: transparent;
-    border-radius: 0px;
-  }
-
-  .tab-content .tab-pane {
-    background-color: transparent;
-  }
-
-  .tab-content {
-    background-color: #fff;
-  }
-
-  @media (max-width: 768px) {
-    .nav-justified>li {
-      display: table-cell;
-      width: 1%;
-    }
-    .nav-justified>li>a {
-      border-bottom: 1px solid #ddd !important;
-      border-radius: 4px 4px 0 0 !important;
-      margin-bottom: 0 !important;
-    }
-    .nav-tabs.nav-justified>.active>a,
-    .nav-tabs.nav-justified>.active>a:hover,
-    .nav-tabs.nav-justified>.active>a:focus {
-      border-bottom-color: #fff !important;
-    }
-  }
-
-  .modal {
-    text-align: center;
-  }
-
-  .modal:before {
-    display: inline-block;
-    vertical-align: middle;
-    content: " ";
-    height: 100%;
-  }
-
-  .modal-dialog {
-    display: inline-block;
-    text-align: left;
-    vertical-align: middle;
-  }
-
-  a.editable {
-    font-size: 18px;
-    color: black;
-  }
-
-  .weekRow {
-    font-size: 19px;
-  }
-</style>
-<script>
-function checkScrennWidth() {
-  if (window.innerWidth < 768) {
-    console.log('rest')
-    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh"></i>');
-  } else {
-    console.log('test')
-    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh">Обновить</i>');
-  };
-};
-
-  $(function() {
-    // Schedule tabs
-    $('#myTab a:first').tab('show');
-    $('.navbar-btn').tab('show');
-
-    checkScrennWidth();
-
-    // Login Modal
-    $('#loginModal')
-      .on('shown.bs.modal', function(e) {
-        $("#inputPassword").focus();
-        $('#loginForm').validator().on('submit', function(e) {
-          var password = $('#inputPassword').val();
-          if (e.isDefaultPrevented()) {
-            $('alert').alert();
-          } else {
-            e.preventDefault();
-            $.ajax({
-              url: '/',
-              type: 'POST',
-              data: $('#loginForm').serialize(),
-              success: function(result) {
-                if (result.status == 'OK') {
-                  $('#loginModal').modal('toggle');
-                  $('#manageModal').modal('show');
-                } else {
-                  $('#defaultAlert').alert();
-                  $('#passwordGroup').addClass('has-error');
-                };
-              }
-            });
-          }
-        });
-      })
-      .on('hidden.bs.modal', function(e) {
-        $('#inputPassword').val('');
-        $('#loginForm').validator('destroy');
-      })
-
-    // Default settings for bootstrap editable
-    $.fn.editable.defaults.source = [{
-        value: ' ',
-        text: ' '
-      },
-      {
-        value: '0',
-        text: '0'
-      },
-      {
-        value: '1',
-        text: '1'
-      },
-      {
-        value: '2',
-        text: '2'
-      },
-      {
-        value: '3',
-        text: '3'
-      },
-      {
-        value: 'B',
-        text: 'B'
-      },
-      {
-        value: '1/2',
-        text: '1/2'
-      },
-      {
-        value: '2/B',
-        text: '2/B'
-      },
-      {
-        value: '3/B',
-        text: '3/B'
-      }
-    ]
-    $.fn.editable.defaults.mode = 'inline';
-    $.fn.editable.defaults.type = 'select';
-    $.fn.editable.defaults.showbuttons = false;
-    $.fn.editable.defaults.pk = 'shortname';
-    $.fn.editable.defaults.url = '/schedule';
-    $.fn.editable.defaults.emptytext = '#';
-    $.fn.editable.defaults.success = function(response, newValue) {
-      if (response.status == 'OK') {
-        console.log(response.status);
-        $.notify("Расписание изменено", {type: "success"});
-      } else {
-        console.log(response.status);
-      };
-    };
-
-    //Bootstrap notify default settings
-    $.notifyDefaults({
-      allow_dismiss: false,
-      z_index: 10031,
-      placement: {
-        from: "bottom",
-        align: "right"
-      },
-      delay: 1
-    });
-
-    //Refresh buttons
-    $('#refreshThisWeekButton').click(function() {
-      $('#thisWeekTable').bootstrapTable('refresh')
-    });
-    $('#refreshNextWeekButton').click(function() {
-      $('#nextWeekTable').bootstrapTable('refresh')
-    });
-
-    // Employee modal
-    $('#addEmployeeModal')
-      .on('shown.bs.modal', function(e) {
-        $("#inputName").focus();
-        $('#addEmployeeForm').validator().on('submit', function(e) {
-          var name_rus = $('#inputName').val();
-          var surname_rus = $('#inputSurname').val();
-          if (e.isDefaultPrevented()) {
-            $('alert').alert();
-          } else {
-            e.preventDefault();
-            $.ajax({
-              url: '/add_employee',
-              type: 'POST',
-              data: $('#addEmployeeForm').serialize(),
-              success: function(result) {
-                if (result.status == 'OK') {
-                  $.notify("Пользователь добавлен", {type: "success"});
-                  $('#addEmployeeModal').modal('toggle');
-                  $('#employeeTable').bootstrapTable('refresh');
-                  $('#thisWeekTable').bootstrapTable('refresh');
-                } else {
-                  $.notify("При добавлении пользователя позникла ошибка", {type: "danger"});
-                  $('#nameGroup').addClass('has-error');
-                  $('#surnameGroup').addClass('has-error');
-                };
-              }
-            });
-          }
-        });
-      })
-      .on('hidden.bs.modal', function(e) {
-        $('#inputName').val('');
-        $('#inputSurname').val('');
-        $('#loginForm').validator('destroy');
-        $('#defaultAlert').alert();
-      })
-
-    // Delete employee button
-    $('#deleteEmployeeButton').click(function() {
-      $.ajax({
-        url: '/delete_employee',
-        type: 'POST',
-        data: {
-          name_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['name_rus'],
-          surname_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['surname_rus']
-        },
-        success: function(result) {
-          if (result.status == 'OK') {
-            $('#employeeTable').bootstrapTable('refresh');
-            $('#thisWeekTable').bootstrapTable('refresh');
-            $.notify("Пользователь удалён", {type: "success"});
-          } else {
-            $.notify("При удалении пользователя позникла ошибка", {type: "danger"});
-          };
-        }
-      });
-    })
-
-  });
-</script>
-
 <body>
   <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
     <div class="container-fluid" id="navfluid">
@@ -331,20 +52,20 @@ function checkScrennWidth() {
             </tr>
             <tr>
               <th data-field="shortname" data-visible="false"></th>
-              <th data-field="name" data-halign="center" data-align="center">Имя</th>
+              <th data-field="name" data-halign="center" data-valign="middle" data-align="center">Имя</th>
               {% for date in this_week %}
-              <th data-field="{{ date }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date }}</th>
+              <th data-field="{{ date['data'] }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date['value'] }}</th>
               {% endfor %}
             </tr>
           </thead>
         </table>
       </div>
       <div class="tab-pane fade active table-responsive" id="next_week" role="tabpanel">
-          <table id="nextWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname">
+          <table id="nextWeekTable" data-toggle="table" data-url="/schedule=next" data-id-field="shortname">
             <thead>
               <tr>
                 <th data-visible="false"></th>
-                <th data-halign="center"><button type="button" class="btn btn-default" id="refreshNextWeekButton"><i class="glyphicon glyphicon-refresh">Обновить</i></button></th>
+                <th data-halign="center"><button type="button" class="btn btn-default" id="refreshNextWeekButton"></button></th>
                 <th data-halign="center" data-valign="middle" class="weekRow">Пн</th>
                 <th data-halign="center" data-valign="middle" class="weekRow">Вт</th>
                 <th data-halign="center" data-valign="middle" class="weekRow">Ср</th>
@@ -353,9 +74,9 @@ function checkScrennWidth() {
               </tr>
               <tr>
                 <th data-field="shortname" data-visible="false"></th>
-                <th data-field="name" data-halign="center" data-align="center">Имя</th>
+                <th data-field="name" data-halign="center" data-valign="middle" data-align="center">Имя</th>
                 {% for date in next_week %}
-                <th data-field="{{ date }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date }}</th>
+                <th data-field="{{ date['data'] }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date['value'] }}</th>
                 {% endfor %}
               </tr>
             </thead>
