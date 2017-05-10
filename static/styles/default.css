@@ -52,9 +52,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  #thisWeekTable {
-    width: auto;
-  }
   .table {
     font-size: 85% !important;
   }
