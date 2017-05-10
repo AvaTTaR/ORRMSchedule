@@ -90,6 +90,9 @@ $(function() {
   $.fn.editable.defaults.pk = 'shortname';
   $.fn.editable.defaults.url = '/schedule';
   $.fn.editable.defaults.emptytext = 'X';
+  $.fn.editable.defaults.display = function(value) {
+    $(this).text(value);
+  }
   $.fn.editable.defaults.params = function (params) {
     var data = {};
     data['shortname'] = params.pk;
