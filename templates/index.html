@@ -115,10 +115,22 @@
   }
 </style>
 <script>
+function checkScrennWidth() {
+  if (window.innerWidth < 768) {
+    console.log('rest')
+    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh"></i>');
+  } else {
+    console.log('test')
+    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh">Обновить</i>');
+  };
+};
+
   $(function() {
     // Schedule tabs
     $('#myTab a:first').tab('show');
     $('.navbar-btn').tab('show');
+
+    checkScrennWidth();
 
     // Login Modal
     $('#loginModal')
@@ -310,7 +322,7 @@
           <thead>
             <tr>
               <th data-visible="false"></th>
-              <th data-halign="center"><button type="button" class="btn btn-default" id="refreshThisWeekButton"><i class="glyphicon glyphicon-refresh">Обновить</i></button></th>
+              <th data-halign="center" id="refreshCell"><button type="button" class="btn btn-default" id="refreshThisWeekButton"></button></th>
               <th data-halign="center" data-valign="middle" class="weekRow">Пн</th>
               <th data-halign="center" data-valign="middle" class="weekRow">Вт</th>
               <th data-halign="center" data-valign="middle" class="weekRow">Ср</th>
