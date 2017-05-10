@@ -39,7 +39,7 @@
     </ul>
     <div class="tab-content tab-content-alt" id="content">
       <div class="tab-pane fade active table-responsive" id="this_week" role="tabpanel">
-        <table id="thisWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname">
+        <table id="thisWeekTable" data-sort-name="name" data-toggle="table" data-url="/schedule=this" data-id-field="shortname">
           <thead>
             <tr>
               <th data-visible="false"></th>
@@ -52,7 +52,7 @@
             </tr>
             <tr>
               <th data-field="shortname" data-visible="false"></th>
-              <th data-field="name" data-halign="center" data-valign="middle" data-align="center">Имя</th>
+              <th data-field="name" data-sortable="true" data-halign="center" data-valign="middle" data-align="center">Имя</th>
               {% for date in this_week %}
               <th data-field="{{ date['data'] }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date['value'] }}</th>
               {% endfor %}
@@ -61,7 +61,7 @@
         </table>
       </div>
       <div class="tab-pane fade active table-responsive" id="next_week" role="tabpanel">
-          <table id="nextWeekTable" data-toggle="table" data-url="/schedule=next" data-id-field="shortname">
+          <table id="nextWeekTable" data-sort-name="name" data-toggle="table" data-url="/schedule=next" data-id-field="shortname">
             <thead>
               <tr>
                 <th data-visible="false"></th>
@@ -74,7 +74,7 @@
               </tr>
               <tr>
                 <th data-field="shortname" data-visible="false"></th>
-                <th data-field="name" data-halign="center" data-valign="middle" data-align="center">Имя</th>
+                <th data-field="name" data-sortable="true" data-halign="center" data-valign="middle" data-align="center">Имя</th>
                 {% for date in next_week %}
                 <th data-field="{{ date['data'] }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date['value'] }}</th>
                 {% endfor %}
@@ -122,19 +122,18 @@
               <i class="glyphicon glyphicon-trash"></i>
             </button>
           </div>
-          <table id="employeeTable" data-toggle="table" data-url="/employees" data-toolbar="#manageTableToolbar" data-show-refresh="true">
+          <table id="employeeTable" data-toggle="table" data-sort-name="name_rus" data-url="/employees" data-toolbar="#manageTableToolbar" data-show-refresh="true" data-single-select="true">
             <thead>
               <tr>
-                <th data-checkbox="true" data-align="center"></th>
-                <th data-field="name_rus" data-halign="center" data-align="center">Имя</th>
-                <th data-field="surname_rus" data-halign="center" data-align="center">Фамилия</th>
+                <th data-checkbox="true"  data-align="center"></th>
+                <th data-field="name_rus" data-halign="center" data-sortable="true" data-align="center">Имя</th>
+                <th data-field="surname_rus" data-halign="center" data-sortable="true" data-align="center">Фамилия</th>
               </tr>
             </thead>
           </table>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-          <button type="button" class="btn btn-primary">Сохранить</button>
         </div>
       </div>
     </div>

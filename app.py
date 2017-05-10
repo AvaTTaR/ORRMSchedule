@@ -52,7 +52,6 @@ def get_schedule_from_db(param):
 @app.route('/schedule', methods=['POST'])
 def update_schedule():
     if request.method == 'POST':
-        print(request.form)
         update(request.form['shortname'], request.form['date'],
                request.form['shift'])
         return jsonify({'status': 'OK'})
