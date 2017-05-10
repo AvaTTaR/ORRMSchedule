@@ -104,15 +104,23 @@
     text-align: left;
     vertical-align: middle;
   }
+
+  a.editable {
+    font-size: 18px;
+    color: black;
+  }
+
+  .weekRow {
+    font-size: 19px;
+  }
 </style>
 <script>
   $(function() {
+    // Schedule tabs
     $('#myTab a:first').tab('show');
     $('.navbar-btn').tab('show');
-  });
-</script>
-<script>
-  $(function() {
+
+    // Login Modal
     $('#loginModal')
       .on('shown.bs.modal', function(e) {
         $("#inputPassword").focus();
@@ -143,104 +151,8 @@
         $('#inputPassword').val('');
         $('#loginForm').validator('destroy');
       })
-  })
-</script>
-<script>
-  $(function() {
-    // Employee modal
-    $('#addEmployeeModal')
-      .on('shown.bs.modal', function(e) {
-        $("#inputName").focus();
-        $('#addEmployeeForm').validator().on('submit', function(e) {
-          var name_rus = $('#inputName').val();
-          var surname_rus = $('#inputSurname').val();
-          if (e.isDefaultPrevented()) {
-            $('alert').alert();
-          } else {
-            e.preventDefault();
-            $.ajax({
-              url: '/add_employee',
-              type: 'POST',
-              data: $('#addEmployeeForm').serialize(),
-              success: function(result) {
-                if (result.status == 'OK') {
-                  $.notify("Пользователь добавлен", {
-                    allow_dismiss: false,
-                    z_index: 10031,
-                    placement: {
-                      from: "bottom",
-                      align: "center"
-                    },
-                    type: "success"
-                  });
-                  $('#addEmployeeModal').modal('toggle');
-                  $('#employeeTable').bootstrapTable('refresh');
-                  $('#thisWeekTable').bootstrapTable('refresh');
-                } else {
-                  $.notify("При добавлении пользователя позникла ошибка", {
-                    allow_dismiss: false,
-                    z_index: 10031,
-                    placement: {
-                      from: "bottom",
-                      align: "center"
-                    },
-                    type: "danger"
-                  });
-                  $('#nameGroup').addClass('has-error');
-                  $('#surnameGroup').addClass('has-error');
-                };
-              }
-            });
-          }
-        });
-      })
-      .on('hidden.bs.modal', function(e) {
-        $('#inputName').val('');
-        $('#inputSurname').val('');
-        $('#loginForm').validator('destroy');
-        $('#defaultAlert').alert();
-      })
 
-    $('#deleteEmployeeButton').click(function() {
-      $.ajax({
-        url: '/delete_employee',
-        type: 'POST',
-        data: {
-          name_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['name_rus'],
-          surname_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['surname_rus']
-        },
-        success: function(result) {
-          if (result.status == 'OK') {
-            $('#employeeTable').bootstrapTable('refresh');
-            $('#thisWeekTable').bootstrapTable('refresh');
-            $.notify("Пользователь удалён", {
-              allow_dismiss: false,
-              z_index: 10031,
-              placement: {
-                from: "bottom",
-                align: "center"
-              },
-              type: "success"
-            });
-          } else {
-            $.notify("При удалении пользователя позникла ошибка", {
-              allow_dismiss: false,
-              z_index: 10031,
-              placement: {
-                from: "bottom",
-                align: "center"
-              },
-              type: "danger"
-            });
-          };
-        }
-      });
-    })
-
-  });
-</script>
-<script>
-  $(function() {
+    // Default settings for bootstrap editable
     $.fn.editable.defaults.source = [{
         value: ' ',
         text: ' '
@@ -278,19 +190,98 @@
         text: '3/B'
       }
     ]
-    $.fn.editable.defaults.mode = 'popup';
+    $.fn.editable.defaults.mode = 'inline';
     $.fn.editable.defaults.type = 'select';
     $.fn.editable.defaults.showbuttons = false;
     $.fn.editable.defaults.pk = 'shortname';
     $.fn.editable.defaults.url = '/schedule';
-    $.fn.editable.defaults.emptytext = '.';
+    $.fn.editable.defaults.emptytext = '#';
     $.fn.editable.defaults.success = function(response, newValue) {
       if (response.status == 'OK') {
         console.log(response.status);
+        $.notify("Расписание изменено", {type: "success"});
       } else {
         console.log(response.status);
-      }
+      };
     };
+
+    //Bootstrap notify default settings
+    $.notifyDefaults({
+      allow_dismiss: false,
+      z_index: 10031,
+      placement: {
+        from: "bottom",
+        align: "right"
+      },
+      delay: 1
+    });
+
+    //Refresh buttons
+    $('#refreshThisWeekButton').click(function() {
+      $('#thisWeekTable').bootstrapTable('refresh')
+    });
+    $('#refreshNextWeekButton').click(function() {
+      $('#nextWeekTable').bootstrapTable('refresh')
+    });
+
+    // Employee modal
+    $('#addEmployeeModal')
+      .on('shown.bs.modal', function(e) {
+        $("#inputName").focus();
+        $('#addEmployeeForm').validator().on('submit', function(e) {
+          var name_rus = $('#inputName').val();
+          var surname_rus = $('#inputSurname').val();
+          if (e.isDefaultPrevented()) {
+            $('alert').alert();
+          } else {
+            e.preventDefault();
+            $.ajax({
+              url: '/add_employee',
+              type: 'POST',
+              data: $('#addEmployeeForm').serialize(),
+              success: function(result) {
+                if (result.status == 'OK') {
+                  $.notify("Пользователь добавлен", {type: "success"});
+                  $('#addEmployeeModal').modal('toggle');
+                  $('#employeeTable').bootstrapTable('refresh');
+                  $('#thisWeekTable').bootstrapTable('refresh');
+                } else {
+                  $.notify("При добавлении пользователя позникла ошибка", {type: "danger"});
+                  $('#nameGroup').addClass('has-error');
+                  $('#surnameGroup').addClass('has-error');
+                };
+              }
+            });
+          }
+        });
+      })
+      .on('hidden.bs.modal', function(e) {
+        $('#inputName').val('');
+        $('#inputSurname').val('');
+        $('#loginForm').validator('destroy');
+        $('#defaultAlert').alert();
+      })
+
+    // Delete employee button
+    $('#deleteEmployeeButton').click(function() {
+      $.ajax({
+        url: '/delete_employee',
+        type: 'POST',
+        data: {
+          name_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['name_rus'],
+          surname_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['surname_rus']
+        },
+        success: function(result) {
+          if (result.status == 'OK') {
+            $('#employeeTable').bootstrapTable('refresh');
+            $('#thisWeekTable').bootstrapTable('refresh');
+            $.notify("Пользователь удалён", {type: "success"});
+          } else {
+            $.notify("При удалении пользователя позникла ошибка", {type: "danger"});
+          };
+        }
+      });
+    })
 
   });
 </script>
@@ -307,7 +298,7 @@
   <div class="container">
     <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
       <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#this_week" role="tab" aria-controls="this_week">Текущая неделя</a>
+        <a class="nav-link" data-toggle="tab" href="#this_week" role="tab" aria-controls="this_week">Текущая неделя</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" data-toggle="tab" href="#next_week" role="tab" aria-controls="next_week">Следующая неделя</a>
@@ -315,21 +306,16 @@
     </ul>
     <div class="tab-content tab-content-alt" id="content">
       <div class="tab-pane fade active table-responsive" id="this_week" role="tabpanel">
-        <div id="thisWeekTableToolbar" class="btn-group">
-          <button type="button" class="btn btn-default" id="saveThisWeekButton">
-            <i class="glyphicon glyphicon-floppy-disk"></i>
-          </button>
-        </div>
-        <table id="thisWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname" data-toolbar="#thisWeekTableToolbar" data-show-refresh="true">
+        <table id="thisWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname">
           <thead>
             <tr>
               <th data-visible="false"></th>
-              <th></th>
-              <th data-halign="center">Пн</th>
-              <th data-halign="center">Вт</th>
-              <th data-halign="center">Ср</th>
-              <th data-halign="center">Чт</th>
-              <th data-halign="center">Пт</th>
+              <th data-halign="center"><button type="button" class="btn btn-default" id="refreshThisWeekButton"><i class="glyphicon glyphicon-refresh">Обновить</i></button></th>
+              <th data-halign="center" data-valign="middle" class="weekRow">Пн</th>
+              <th data-halign="center" data-valign="middle" class="weekRow">Вт</th>
+              <th data-halign="center" data-valign="middle" class="weekRow">Ср</th>
+              <th data-halign="center" data-valign="middle" class="weekRow">Чт</th>
+              <th data-halign="center" data-valign="middle" class="weekRow">Пт</th>
             </tr>
             <tr>
               <th data-field="shortname" data-visible="false"></th>
@@ -341,10 +327,27 @@
           </thead>
         </table>
       </div>
-      <div class="tab-pane fade" id="next_week" role="tabpanel">
-        <div class="container-fluid">
-          ...
-        </div>
+      <div class="tab-pane fade active table-responsive" id="next_week" role="tabpanel">
+          <table id="nextWeekTable" data-toggle="table" data-url="/schedule=this" data-id-field="shortname">
+            <thead>
+              <tr>
+                <th data-visible="false"></th>
+                <th data-halign="center"><button type="button" class="btn btn-default" id="refreshNextWeekButton"><i class="glyphicon glyphicon-refresh">Обновить</i></button></th>
+                <th data-halign="center" data-valign="middle" class="weekRow">Пн</th>
+                <th data-halign="center" data-valign="middle" class="weekRow">Вт</th>
+                <th data-halign="center" data-valign="middle" class="weekRow">Ср</th>
+                <th data-halign="center" data-valign="middle" class="weekRow">Чт</th>
+                <th data-halign="center" data-valign="middle" class="weekRow">Пт</th>
+              </tr>
+              <tr>
+                <th data-field="shortname" data-visible="false"></th>
+                <th data-field="name" data-halign="center" data-align="center">Имя</th>
+                {% for date in next_week %}
+                <th data-field="{{ date }}" data-editable="true" data-valign="middle" data-halign="center" data-align="center">{{ date }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+          </table>
       </div>
     </div>
   </div>

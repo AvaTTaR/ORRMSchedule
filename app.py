@@ -53,7 +53,7 @@ def get_schedule_from_db(param):
 def update_schedule():
     if request.method == 'POST':
         print(request.form)
-        return jsonify({'status': '404'})
+        return jsonify({'status': 'OK'})
 
 
 if __name__ == "__main__":
