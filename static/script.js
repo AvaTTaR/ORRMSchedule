@@ -4,14 +4,14 @@ $(function() {
   $('.navbar-btn').tab('show');
 
   // Check screen
-  if (window.innerWidth < 768) {
-    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh"></i>');
+  if (window.innerWidth < 767) {
+    $('#refreshThisWeekButton').html('<span class="glyphicon glyphicon-refresh"></span>');
     $('#refreshThisWeekButton').addClass('btn-sm');
-    $('#refreshNextWeekButton').html('<i class="glyphicon glyphicon-refresh"></i>');
+    $('#refreshNextWeekButton').html('<span class="glyphicon glyphicon-refresh"></span>');
     $('#refreshNextWeekButton').addClass('btn-sm');
   } else {
-    $('#refreshThisWeekButton').html('<i class="glyphicon glyphicon-refresh">Обновить</i>');
-    $('#refreshNextWeekButton').html('<i class="glyphicon glyphicon-refresh">Обновить</i>');
+    $('#refreshThisWeekButton').html('<span class="glyphicon glyphicon-refresh"></span> Обновить');
+    $('#refreshNextWeekButton').html('<span class="glyphicon glyphicon-refresh"></span> Обновить');
   };
 
   // Login Modal
@@ -48,8 +48,8 @@ $(function() {
 
   // Default settings for bootstrap editable
   $.fn.editable.defaults.source = [{
-      value: ' ',
-      text: ' '
+      value: 'X',
+      text: 'X'
     },
     {
       value: '0',
@@ -92,7 +92,7 @@ $(function() {
   $.fn.editable.defaults.emptytext = 'X';
   $.fn.editable.defaults.display = function(value) {
     $(this).text(value);
-  }
+  };
   $.fn.editable.defaults.params = function (params) {
     var data = {};
     data['shortname'] = params.pk;

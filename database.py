@@ -29,7 +29,7 @@ def init_db():
     conn.execute('''CREATE TABLE schedule (
                  date VARCHAR(10),
                  shortname VARCHAR(10),
-                 employee_shift VARCHAR(3) DEFAULT '',
+                 employee_shift VARCHAR(3) DEFAULT 'X',
                  UNIQUE (date, shortname));''')
     conn.execute('''CREATE TABLE keys (
                      shortname VARCHAR NOT NULL,
