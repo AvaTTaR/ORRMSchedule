@@ -148,6 +148,7 @@ $(function() {
                 $('#addEmployeeModal').modal('toggle');
                 $('#employeeTable').bootstrapTable('refresh');
                 $('#thisWeekTable').bootstrapTable('refresh');
+                $('#nextWeekTable').bootstrapTable('refresh');
               } else {
                 $.notify("При добавлении пользователя позникла ошибка", {type: "danger"});
                 $('#nameGroup').addClass('has-error');
@@ -178,6 +179,7 @@ $(function() {
         if (result.status == 'OK') {
           $('#employeeTable').bootstrapTable('refresh');
           $('#thisWeekTable').bootstrapTable('refresh');
+          $('#nextWeekTable').bootstrapTable('refresh');
           $.notify("Пользователь удалён", {type: "success"});
         } else {
           $.notify("При удалении пользователя позникла ошибка", {type: "danger"});
