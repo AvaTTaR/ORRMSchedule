@@ -2,46 +2,16 @@ body {
   background-color: #E9EAEE;
 }
 
+.navbar {
+  margin-bottom: 0px !important;
+  height: 50px;
+}
+
 .navbar .navbar-btn {
   position: absolute;
   top: 0px;
   right: 0px;
   margin-right: 15px;
-}
-
-.nav-tabs {
-  &.nav-tabs-alt {
-    padding-top: 30px;
-    li {
-      a {
-        color: @brand-info;
-        font-size: 16px;
-      }
-    }
-    li.active {
-      a {
-        background-color: #fff;
-        color: @brand-primary !important;
-        font-size: 16px;
-      }
-    }
-  }
-}
-
-.tab-content.tab-content-alt {
-  border-right: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  border-top-color: transparent;
-  border-radius: 0px;
-}
-
-.tab-content .tab-pane {
-  background-color: transparent;
-}
-
-.tab-content {
-  background-color: #fff;
 }
 
 @media (max-width: 767px) {
@@ -50,21 +20,6 @@ body {
   }
   .weekRow {
     font-size: 14px !important;
-  }
-
-  .nav-justified>li {
-    display: table-cell;
-    width: 1%;
-  }
-  .nav-justified>li>a {
-    border-bottom: 1px solid #ddd !important;
-    border-radius: 4px 4px 0 0 !important;
-    margin-bottom: 0 !important;
-  }
-  .nav-tabs.nav-justified>.active>a,
-  .nav-tabs.nav-justified>.active>a:hover,
-  .nav-tabs.nav-justified>.active>a:focus {
-    border-bottom-color: #fff !important;
   }
 }
 
@@ -87,14 +42,84 @@ body {
 
 a.editable {
   font-size: 18px;
-
 }
 
 a.emptyValue {
   opacity: 0.5;
-    color: black;
+  color: black;
 }
 
 .weekRow {
   font-size: 16px;
+}
+
+.datepicker table tr td span.active {
+  background: #04c!important;
+  border-color: #04c!important;
+}
+
+.datepicker .datepicker-days tr td.active {
+  background: #04c!important;
+}
+
+#weekpicker .datepicker .datepicker-days tr td.active~td, #weekpicker .datepicker .datepicker-days tr td.active {
+  color: #fff;
+  background-color: #04c;
+  border-radius: 0;
+}
+
+#weekpicker .datepicker .datepicker-days tr:hover td, #weekpicker .datepicker table tr td.day:hover, #weekpicker .datepicker table tr td.focused {
+  color: #000!important;
+  background: #e5e2e3!important;
+  border-radius: 0!important;
+}
+
+.calendar-card {
+  float: right;
+  transition: 0.3s;
+  border-radius: 5px;
+  background-color: #fff;
+  margin: 20px;
+  width: 210px;
+}
+
+.table-card {
+  float: left;
+  transition: 0.3s;
+  border-radius: 5px;
+  background-color: #fff;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.row {
+  align-items: center;
+  overflow: hidden;
+  margin: 10px;
+}
+
+.row.content {
+  height: 450px
+}
+
+@media screen and (max-width: 800px) {
+  .col-sm-8 {
+    width: auto;
+    padding: 0px;
+  }
+  .calendar-card {
+    float: none;
+    display: inline-block;
+  }
+  .sidenav {
+    height: auto;
+    padding: 15px;
+  }
+  .row.content {
+    height: auto;
+    margin: 0px;
+  }
+  .row.content {
+    height: 100%;
+  }
 }

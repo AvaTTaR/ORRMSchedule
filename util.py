@@ -1,86 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Util module."""
-from datetime import timedelta, datetime
-from isoweek import Week
+from datetime import datetime
 
 
 class Util:
-    """Util class."""
-
     @staticmethod
-    def get_dates_tuple():
-        """Return a tuple with tuples of dates."""
-        dates = []
-
-        this_week = Week.thisweek()
-        # next_week = this_week + 1
-        monday = this_week.monday()
-
-        for i in [0, 1, 2, 3, 4, 7, 8, 9, 10, 11]:
-            day = monday + timedelta(days=i)
-            # dates.append(day.strftime('%Y-%m-%d'))
-            dates.append((str(day),))  # adding tuple with date
-
-        return tuple(dates)
-
-    @staticmethod
-    def get_dates(param):
-        """Return tuple with dates."""
-        dates = []
-
-        this_week = Week.thisweek()
-        # next_week = this_week + 1
-        monday = this_week.monday()
-
-        if param == "this":
-            days = [0, 1, 2, 3, 4]
-        elif param == "next":
-            days = [7, 8, 9, 10, 11]
-        elif param == "two":
-            days = [0, 1, 2, 3, 4, 7, 8, 9, 10, 11]
-        else:
-            return "Wrong parameter"
-
-        for i in days:
-            day = monday + timedelta(days=i)
-            # dates.append(day.strftime('%Y-%m-%d'))
-            dates.append(str(day))
-
-        return dates
-
-    @staticmethod
-    def get_formatted_dates(param):
-        formatted_dates = []
-        for date in Util.get_dates(param):
-            date_object = datetime.strptime(date, "%Y-%m-%d")
-            formatted_dates.append(date_object.strftime("%d.%m"))
-        return formatted_dates
-
-    @staticmethod
-    def get_this_week():
-        """Return list of dates for this week."""
-        dates = []
-
-        this_week = Week.thisweek()
-        monday = this_week.monday()
-
-        for i in range(5):
-            day = monday + timedelta(days=i)
-            dates.append(str(day))
-
-        return dates
-
-    @staticmethod
-    def format_date(date):
-        date_object = datetime.strptime(date, "%Y-%m-%d")
-        return date_object.strftime("%d.%m")
-
-    @staticmethod
-    def get_dates_for_site(param):
-        dates = []
-        for day in Util.get_dates(param):
-            dates.append({'data': day, 'value': Util.format_date(day)})
-        return dates
+    def get_day_of_week(date):
+        return datetime.strptime(date, "%Y-%m-%d").strftime('%A').lower()
 
     @staticmethod
     def translit(string):

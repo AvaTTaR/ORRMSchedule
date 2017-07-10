@@ -10,26 +10,22 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def get_page():
-    """Default page."""
     if request.method == 'POST':
         if check_password_hash(get_admin_pwhash(), request.form['password']):
             return jsonify({'status': 'OK'})
         else:
             return jsonify({'status': '404'})
-    return render_template('index.html',
-                           this_week=Util.get_dates_for_site("this"),
-                           next_week=Util.get_dates_for_site("next"))
+    return render_template('index.html')
 
 
 @app.route('/employees')
 def get_employees_list():
-    """Return employees data from database."""
+    """Return employees data from database"""
     return jsonify(get_employees())
 
 
 @app.route('/add_employee', methods=['POST'])
 def add_employee_to_db():
-    """Add employee to database."""
     if request.method == 'POST':
         add_employee(request.form['name_rus'], request.form['surname_rus'])
         return jsonify({'status': 'OK'})
@@ -37,23 +33,23 @@ def add_employee_to_db():
 
 @app.route('/delete_employee', methods=['POST'])
 def delete_employee_from_db():
-    """Delete employee from database."""
     if request.method == 'POST':
         delete_employee(request.form['name_rus'], request.form['surname_rus'])
         return jsonify({'status': 'OK'})
 
 
-@app.route('/schedule=<string:param>')
-def get_schedule_from_db(param):
-    """Return schedule."""
-    return jsonify(get_schedule(param))
-
-
 @app.route('/schedule', methods=['POST'])
-def update_schedule():
+def get_schedule_from_db():
     if request.method == 'POST':
-        update(request.form['shortname'], request.form['date'],
-               request.form['shift'])
+        return jsonify(get_schedule(request.form.to_dict()))
+
+
+@app.route('/update_schedule', methods=['POST'])
+def update_schedule_in_db():
+    if request.method == 'POST':
+        print(request.form)
+        update_schedule(request.form['shortname'], request.form['date'],
+                        request.form['shift'])
         return jsonify({'status': 'OK'})
 
 
