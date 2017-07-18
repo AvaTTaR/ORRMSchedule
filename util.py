@@ -1,11 +1,41 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import re
+from isoweek import Week
+
 
 class Util:
     @staticmethod
-    def get_day_of_week(date):
+    def get_day_by_date(date):
         return datetime.strptime(date, "%Y-%m-%d").strftime('%A').lower()
+
+    @staticmethod
+    def get_ordinary_week(iso_week):
+        week = {
+            'monday': Week.fromstring(iso_week).monday().isoformat(),
+            'tuesday': Week.fromstring(iso_week).tuesday().isoformat(),
+            'wednesday': Week.fromstring(iso_week).wednesday().isoformat(),
+            'thursday': Week.fromstring(iso_week).thursday().isoformat(),
+            'friday': Week.fromstring(iso_week).friday().isoformat()
+        }
+        return week
+
+    @staticmethod
+    def iso_week_to_date(iso_week):  # iso_week in format 2017-W28-4
+        year = iso_week[:4]
+        week = iso_week[6: 8]
+        day = iso_week[9]
+        #  Week.day(0-6)
+        return Week(int(year), int(week)).day(int(day)-1)
+
+    @staticmethod
+    def is_valid_employee(name_rus, surname_rus):
+        name = re.search(r'^[А-ЯЁ][а-яё]+$', name_rus)
+        surname = re.search(r'^[А-ЯЁ][а-яё]+$', surname_rus)
+        if name is None or surname is None:
+            return False
+        return True
 
     @staticmethod
     def translit(string):
@@ -97,3 +127,5 @@ class Util:
             translit_string += char
 
         return translit_string
+
+Util.iso_week_to_date("2017-W28-4")

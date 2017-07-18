@@ -98,13 +98,14 @@ def get_employees():
     return employees
 
 
-def get_schedule(week):
+def get_schedule(iso_week):
     conn = sqlite3.connect(database_url)
     cur = conn.cursor()
 
     schedule = []
     dates_to_insert = []  # List of dates to insert in db if they not exist
     shortnames = get_employees_shortnames()
+    week = Util.get_ordinary_week(iso_week)
 
     # Loop through list with shortnames and fill list with schedule
     for shortname in shortnames:
@@ -139,7 +140,7 @@ def get_schedule(week):
         for day in query:
             date = day[0]
             shift = day[1]
-            day = Util.get_day_of_week(date)
+            day = Util.get_day_by_date(date)
             employee_schedule[day] = shift
 
         schedule.append(employee_schedule)
@@ -149,11 +150,12 @@ def get_schedule(week):
     return schedule
 
 
-def update_schedule(shortname, date, shift):
+def update_schedule(shortname, iso_week, shift):
     """Update schedule"""
     conn = sqlite3.connect(database_url)
     cur = conn.cursor()
 
+    date = Util.iso_week_to_date(iso_week)
     cur.execute('''UPDATE schedule SET employee_shift=? 
                    WHERE date=? AND shortname=?''', [shift, date, shortname])
 

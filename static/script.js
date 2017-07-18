@@ -1,17 +1,44 @@
-var weekpicker, schedule = {},
-  week = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+var weekpicker, week = {},
+  isoMonday, daysOfWeek = {
+    "monday": 1,
+    "tuesday": 2,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 5
+  };
 
-// Load data to table from server
-function refreshScheduleTable() {
+// Load data from server to schedule table
+function refreshScheduleTable(isoWeek) {
   $.ajax({
-    url: "/schedule",
-    type: "POST",
-    data: schedule,
+    url: "/api/v1/schedule/" + isoWeek,
+    type: "GET",
     dataType: "json",
     success: function(schedule) {
       $('#scheduleTable').bootstrapTable('load', schedule);
     }
   });
+}
+
+// Load data from server to employees table
+function refreshEmployeesTable() {
+  $.ajax({
+    url: '/api/v1/employees',
+    type: 'GET',
+    dataType: "json",
+    success: function(employees) {
+      $('#employeesTable').bootstrapTable('load', employees);
+    }
+  });
+}
+
+// Return date in ISO week format (2017-W32)
+function getISOWeek() {
+  return isoMonday.isoWeekYear() + "-W" + isoMonday.isoWeek();
+}
+
+// Return date in ISO week format (2017-W32-2)
+function getISOWeekDay(dayOfWeek) {
+  return getISOWeek() + "-" + daysOfWeek[dayOfWeek];
 }
 
 // Return string in ISO or dd.mm format
@@ -24,7 +51,9 @@ function formatDateToString(date, format) {
   var yyyy = date.getFullYear();
 
   // Return date in format
-  if (format == 'iso') {
+  if (format == 'isoWeek') {
+    return moment(date).isoWeekYear() + "-W" + isoMonday.isoWeek();
+  } else if (format == 'iso') {
     return (yyyy + "-" + MM + "-" + dd);
   } else if (format == 'dd.mm') {
     return (dd + '.' + MM);
@@ -34,22 +63,25 @@ function formatDateToString(date, format) {
 }
 
 function setWeekPicker(date) {
+  isoMonday = moment(new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 1));
+
   // Create field with dates in schedule object
   for (var i = 0; i < 5; i++) {
-    var day = week[i];
+    var day = daysOfWeek[i];
     var dateObj = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + (i + 1));
-    schedule[day] = formatDateToString(dateObj, 'iso');
+    week[day] = getISOWeekDay(day);
     var content = formatDateToString(dateObj, 'dd.mm');
     $('#scheduleTable tr:nth-child(2)>th:nth-child(' + (i + 2) + ')').html(content);
   }
 
-  refreshScheduleTable();
+  refreshScheduleTable(getISOWeek());
 
   weekpicker.datepicker('update', new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 1));
   // weekpicker.val(arcDay1.getFullYear() + '-' + months[arcDay1.getMonth()] + '-' + arcDay1.getDate() + ', ' + arcDay1.getFullYear() + '-' + months[arcDay1.getMonth()] + '-' + arcDay1.getDate());
 }
 
 $(function() {
+
   // Set weekpicker
   weekpicker = $('#weekpicker');
   weekpicker.datepicker({
@@ -90,14 +122,15 @@ $(function() {
             url: '/',
             type: 'POST',
             data: $('#loginForm').serialize(),
-            success: function(result) {
-              if (result.status == 'OK') {
-                $('#loginModal').modal('toggle');
-                $('#manageModal').modal('show');
-              } else {
-                $('#defaultAlert').alert();
-                $('#passwordGroup').addClass('has-error');
-              };
+            success: function() {
+              $('#loginModal').modal('toggle');
+              $('#manageModal').modal('show');
+            },
+            error: function() {
+              $.notify("Неверный пароль", {
+                type: "danger"
+              });
+              $('#passwordGroup').addClass('has-error');
             }
           });
         }
@@ -150,29 +183,31 @@ $(function() {
   $.fn.editable.defaults.type = 'select';
   $.fn.editable.defaults.showbuttons = false;
   $.fn.editable.defaults.pk = 'shortname';
-  $.fn.editable.defaults.url = '/update_schedule';
+  $.fn.editable.defaults.url = '/api/v1/schedule';
+  $.fn.editable.defaults.ajaxOptions = {
+    type: "PUT"
+  };
   $.fn.editable.defaults.emptytext = 'X';
   $.fn.editable.defaults.display = function(value) {
     $(this).text(value);
   };
   $.fn.editable.defaults.params = function(params) {
     var data = {};
-    date = params.name;
+    dayOfWeek = params.name; // moday, tuesday, ... , friday
     data['shortname'] = params.pk;
-    data['date'] = schedule[date];
+    data['iso_week'] = getISOWeekDay(dayOfWeek);
     data['shift'] = params.value;
     return data;
   };
   $.fn.editable.defaults.success = function(response, newValue) {
-    if (response.status == 'OK') {
-      $.notify("Расписание обновлено", {
-        type: "success"
-      });
-    } else {
-      $.notify("При обновлении расписания возникли ошибки", {
-        type: "danger"
-      });
-    };
+    $.notify("Расписание обновлено", {
+      type: "success"
+    });
+  };
+  $.fn.editable.defaults.error = function(response, newValue) {
+    $.notify("При обновлении расписания возникли ошибки", {
+      type: "danger"
+    });
   };
 
   // Set up default settings for notifications
@@ -186,6 +221,12 @@ $(function() {
     delay: 1
   });
 
+  // Set manage modal
+  $('#manageModal')
+    .on('shown.bs.modal', function(e) {
+      refreshEmployeesTable();
+    });
+
   // Set modal for adding employees
   $('#addEmployeeModal')
     .on('shown.bs.modal', function(e) {
@@ -198,24 +239,32 @@ $(function() {
         } else {
           e.preventDefault();
           $.ajax({
-            url: '/add_employee',
+            url: '/api/v1/employees',
             type: 'POST',
             data: $('#addEmployeeForm').serialize(),
-            success: function(result) {
-              if (result.status == 'OK') {
+            statusCode: {
+              201: function() {
                 $.notify("Пользователь добавлен", {
                   type: "success"
                 });
                 $('#addEmployeeModal').modal('toggle');
-                $('#employeeTable').bootstrapTable('refresh');
-                $('#scheduleTable').bootstrapTable('refresh');
-              } else {
-                $.notify("При добавлении пользователя позникла ошибка", {
+                refreshEmployeesTable();
+                refreshScheduleTable(getISOWeek());
+              },
+              400: function() {
+                $.notify("Неверные имя или фамилия", {
                   type: "danger"
                 });
                 $('#nameGroup').addClass('has-error');
                 $('#surnameGroup').addClass('has-error');
-              };
+              }
+            },
+            error: function() {
+              $.notify("При добавлении пользователя позникла ошибка", {
+                type: "danger"
+              });
+              $('#nameGroup').addClass('has-error');
+              $('#surnameGroup').addClass('has-error');
             }
           });
         }
@@ -231,24 +280,25 @@ $(function() {
   // Set onClick function to button for delete employees
   $('#deleteEmployeeButton').click(function() {
     $.ajax({
-      url: '/delete_employee',
-      type: 'POST',
+      url: '/api/v1/employees',
+      type: 'DELETE',
       data: {
-        name_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['name_rus'],
-        surname_rus: $('#employeeTable').bootstrapTable('getSelections')[0]['surname_rus']
+        name_rus: $('#employeesTable').bootstrapTable('getSelections')[0]['name_rus'],
+        surname_rus: $('#employeesTable').bootstrapTable('getSelections')[0]['surname_rus']
       },
-      success: function(result) {
-        if (result.status == 'OK') {
-          $('#employeeTable').bootstrapTable('refresh');
-          $('#scheduleTable').bootstrapTable('refresh');
+      statusCode: {
+        200: function() {
           $.notify("Пользователь удалён", {
             type: "success"
           });
-        } else {
-          $.notify("При удалении пользователя позникла ошибка", {
-            type: "danger"
-          });
-        };
+          refreshEmployeesTable();
+          refreshScheduleTable(getISOWeek());
+        }
+      },
+      error: function() {
+        $.notify("При удалении пользователя позникла ошибка", {
+          type: "danger"
+        });
       }
     });
   })
