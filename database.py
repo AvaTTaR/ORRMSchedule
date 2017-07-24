@@ -17,37 +17,42 @@ def init_db():
     conn = sqlite3.connect(database_url)
 
     conn.execute('''CREATE TABLE employees (
-                 id INTEGER NOT NULL,
-                 name_rus VARCHAR(15),
-                 surname_rus VARCHAR(15),
-                 name_eng VARCHAR(15),
-                 surname_eng VARCHAR(15),
-                 shortname VARCHAR(15),
-                 PRIMARY KEY(id),
-                 UNIQUE (id, name_rus, name_eng));''')
+                    id INTEGER NOT NULL,
+                    name_rus VARCHAR(15),
+                    surname_rus VARCHAR(15),
+                    name_eng VARCHAR(15),
+                    surname_eng VARCHAR(15),
+                    shortname VARCHAR(15),
+                    PRIMARY KEY(id),
+                    UNIQUE (id, name_rus, name_eng));''')
 
     conn.execute('''CREATE TABLE schedule (
-                 date VARCHAR(10),
-                 shortname VARCHAR(10),
-                 employee_shift VARCHAR(3) DEFAULT 'X',
-                 UNIQUE (date, shortname));''')
+                    date VARCHAR(10),
+                    shortname VARCHAR(10),
+                    employee_shift VARCHAR(3) DEFAULT 'X',
+                    UNIQUE (date, shortname))''')
 
-    conn.execute('''CREATE TABLE keys (
-                     shortname VARCHAR NOT NULL,
-                     password VARCHAR NOT NULL);''')
+    conn.execute('''CREATE TABLE passwords (
+                    shortname VARCHAR NOT NULL UNIQUE,
+                    password_hash VARCHAR NOT NULL)''')
 
-    password = generate_password_hash(input("Enter password: "))
-    conn.execute('''INSERT INTO keys VALUES (?, ?);''', ['admin', password])
     conn.commit()
     conn.close()
 
 
-def get_admin_pwhash():
-    """Get password hash to compare with password hash from login modal"""
-    shortname = 'admin'
+def set_password(shortname):
+    password_hash = generate_password_hash(input("Enter password: "))
+    conn = sqlite3.connect(database_url)
+    conn.execute('''INSERT OR REPLACE INTO passwords(shortname, password_hash)
+                    VALUES(?, ?)''', [shortname, password_hash])
+    conn.commit()
+    conn.close()
+
+
+def get_password_hash(shortname):
     conn = sqlite3.connect(database_url)
     cur = conn.execute \
-        ("SELECT password FROM keys WHERE shortname = ?", [shortname])
+        ("SELECT password_hash FROM passwords WHERE shortname = ?", [shortname])
     pwhash = cur.fetchone()[0]
     conn.commit()
     conn.close()
