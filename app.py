@@ -12,7 +12,8 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def get_page():
     if request.method == 'POST':
-        if check_password_hash(get_admin_pwhash(), request.form['password']):
+        if check_password_hash(get_password_hash('admin'),
+                               request.form['password']):
             return Response(status=200)
         else:
             return Response(status=403)
