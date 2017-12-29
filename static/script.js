@@ -33,7 +33,7 @@ function refreshEmployeesTable() {
 
 // Return date in ISO week format (2017-W32)
 function getISOWeek() {
-  return isoMonday.isoWeekYear() + "-W" + isoMonday.isoWeek();
+  return isoMonday.isoWeekYear() + "-W" + ("0" + isoMonday.isoWeek()).slice(-2);
 }
 
 // Return date in ISO week format (2017-W32-2)
@@ -52,7 +52,7 @@ function formatDateToString(date, format) {
 
   // Return date in format
   if (format == 'isoWeek') {
-    return moment(date).isoWeekYear() + "-W" + isoMonday.isoWeek();
+    return moment(date).isoWeekYear() + "-W" + ("0" + isoMonday.isoWeek()).slice(-2);
   } else if (format == 'iso') {
     return (yyyy + "-" + MM + "-" + dd);
   } else if (format == 'dd.mm') {
